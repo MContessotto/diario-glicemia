@@ -178,7 +178,9 @@ table.rt{border-collapse:collapse;width:100%;table-layout:fixed}
 <section id="tab-carbo" class="tab">
   <div class="card">
     <h2>Calculadora de carboidratos</h2>
-    <label class="lbl" for="cbGroup" style="margin-top:0">Grupo</label>
+    <label class="lbl" for="cbGli" style="margin-top:0">Glicemia atual (mg/dL), para correção</label>
+    <input id="cbGli" inputmode="numeric" placeholder="opcional" autocomplete="off">
+    <label class="lbl" for="cbGroup">Grupo</label>
     <select id="cbGroup"></select>
     <div id="cbFoodWrap">
       <label class="lbl" for="cbFood">Alimento</label>
@@ -201,9 +203,9 @@ table.rt{border-collapse:collapse;width:100%;table-layout:fixed}
     <div id="cbList"></div>
     <div id="cbTotWrap" hidden>
       <div class="cbtot"><span>Total de carboidratos</span><strong id="cbTotal">0 g</strong></div>
-      <div id="cbEst" class="cbest" hidden></div>
       <button class="sec" id="cbClear" type="button">Limpar refeição</button>
     </div>
+    <div id="cbEst" class="cbest" hidden></div>
     <p class="hint">Valores da Tabela Brasileira de Composição de Alimentos (TACO, 4ª ed., NEPA/Unicamp), por 100 g do alimento, já com os pesos do preparo indicado (cozido, cru etc.). Pese o alimento no mesmo estado indicado. Carboidratos incluem a fibra. Para produtos industrializados, use "Outro alimento" com o valor do rótulo.</p>
   </div>
 </section>
@@ -258,10 +260,14 @@ table.rt{border-collapse:collapse;width:100%;table-layout:fixed}
     <p class="hint">Só destaca valores no app e no relatório (▼ abaixo, ▲ acima). Use os limites que o seu médico definiu.</p>
   </div>
   <div class="card">
-    <h2>Relação insulina/carboidrato</h2>
+    <h2>Doses prescritas pelo médico</h2>
     <label class="lbl" for="sRatio" style="margin-top:0">1 unidade de insulina para cada (gramas de carboidrato)</label>
     <input id="sRatio" inputmode="decimal" placeholder="ex.: 15 (deixe vazio para não usar)">
-    <p class="hint">Preencha somente com a relação que o seu médico prescreveu. Com ela, a calculadora mostra uma <b>estimativa</b> de unidades para conferência. Sem ela, a calculadora só soma os carboidratos.</p>
+    <label class="lbl" for="sIsf">Correção: 1 unidade de insulina regular baixa (mg/dL)</label>
+    <input id="sIsf" inputmode="decimal" placeholder="ex.: 40 (fator de sensibilidade)">
+    <label class="lbl" for="sTarget">Glicemia-alvo para a correção (mg/dL)</label>
+    <input id="sTarget" inputmode="numeric" placeholder="ex.: 100">
+    <p class="hint">Preencha somente com os valores que o seu médico prescreveu. Com eles, a calculadora mostra uma <b>estimativa</b> de unidades para os carboidratos e para a correção da glicemia, só para conferência. Campos vazios não entram na conta.</p>
   </div>
   <div class="card">
     <h2>Backup dos dados</h2>
@@ -326,7 +332,7 @@ var $$=function(s){return Array.prototype.slice.call(document.querySelectorAll(s
 
 /* ---------- armazenamento ---------- */
 var storageOK=true;
-function defaults(){return {patient:'',low:70,high:180,days:{},lastType:{},ratio:null}}
+function defaults(){return {patient:'',low:70,high:180,days:{},lastType:{},ratio:null,isf:null,target:null}}
 function load(){
   try{
     var r=localStorage.getItem(KEY);
@@ -762,7 +768,7 @@ function showTab(t){
 }
 function syncInputs(){
   $('#rName').value=db.patient||'';
-  $('#sLow').value=db.low;$('#sHigh').value=db.high;$('#sRatio').value=db.ratio?fnum(db.ratio):'';
+  $('#sLow').value=db.low;$('#sHigh').value=db.high;$('#sRatio').value=db.ratio?fnum(db.ratio):'';$('#sIsf').value=db.isf?fnum(db.isf):'';$('#sTarget').value=db.target?fnum(db.target):'';
 }
 function tick(){
   $('#clock').textContent=nowTime();
@@ -889,28 +895,44 @@ function cbAdd(){
   cbRender();$('#cbGrams').focus();
 }
 function cbRound(v){return Math.round(v*10)/10}
+function cbHalf(v){return Math.round(v*2)/2}
 function cbRender(){
-  var box=$('#cbList');
-  if(!cb.length){box.innerHTML='<div class="empty-msg">Adicione os alimentos da refeição.</div>';$('#cbTotWrap').hidden=true;return}
-  box.innerHTML=cb.map(function(x,n){
-    return '<div class="cbrow"><div class="n">'+esc(x.n)+'<small>'+fnum(cbRound(x.g))+' g · '+fnum(x.p)+' g/100 g</small></div><b>'+fnum(cbRound(x.c))+' g</b><button type="button" data-rm="'+n+'" aria-label="Remover">✕</button></div>';
-  }).join('');
   var tot=cb.reduce(function(a,x){return a+x.c},0);
-  $('#cbTotal').textContent=fnum(cbRound(tot))+' g';
-  $('#cbTotWrap').hidden=false;
-  var est=$('#cbEst');
-  if(db.ratio>0){
-    var u=Math.round(tot/db.ratio*2)/2;
-    est.hidden=false;
-    est.innerHTML='<span class="hint" style="margin:0;display:block">Estimativa com a sua relação (1 U para cada '+fnum(db.ratio)+' g)</span><strong>≈ '+fnum(u)+' U</strong>'+
-      (u>30?'<p class="hint" style="color:var(--err);margin:6px 0 0"><b>Valor alto: confira os alimentos e as gramas.</b></p>':'')+
-      '<p class="hint" style="margin:6px 0 0">Conta só os carboidratos: não considera a glicemia do momento, atividade física nem outras orientações. Confirme com o seu médico antes de aplicar.</p>'+
-      '<button class="sec" id="cbUse" type="button">Levar para o registro</button>';
-    est.dataset.u=String(u);
-  }else{
-    est.hidden=false;est.removeAttribute('data-u');
-    est.innerHTML='<span class="hint" style="margin:0">Para ver uma estimativa de unidades, informe em <b>Ajustes</b> a relação insulina/carboidrato prescrita pelo seu médico.</span>';
+  if(!cb.length){$('#cbList').innerHTML='<div class="empty-msg">Adicione os alimentos da refeição.</div>';$('#cbTotWrap').hidden=true}
+  else{
+    $('#cbList').innerHTML=cb.map(function(x,n){
+      return '<div class="cbrow"><div class="n">'+esc(x.n)+'<small>'+fnum(cbRound(x.g))+' g · '+fnum(x.p)+' g/100 g</small></div><b>'+fnum(cbRound(x.c))+' g</b><button type="button" data-rm="'+n+'" aria-label="Remover">✕</button></div>';
+    }).join('');
+    $('#cbTotal').textContent=fnum(cbRound(tot))+' g';
+    $('#cbTotWrap').hidden=false;
   }
+  var est=$('#cbEst'),gli=num($('#cbGli').value),h='',carbU=null,corrU=null,low=false;
+  est.removeAttribute('data-u');
+  if(!cb.length&&!(gli>0)){est.hidden=true;est.innerHTML='';return}
+  est.hidden=false;
+  if(gli>0&&gli<db.low){
+    low=true;
+    h+='<p class="hint" style="color:var(--err);margin:0 0 8px"><b>Glicemia abaixo de '+db.low+' mg/dL: não use a correção. Siga a orientação do seu médico para tratar a hipoglicemia.</b></p>';
+  }
+  if(cb.length){
+    if(db.ratio>0){carbU=cbHalf(tot/db.ratio);h+='<div>Carboidratos ('+fnum(cbRound(tot))+' g ÷ '+fnum(db.ratio)+'): <b>'+fnum(carbU)+' U</b></div>'}
+    else h+='<div class="hint" style="margin:0">Para estimar a insulina dos carboidratos, informe em <b>Ajustes</b> a relação insulina/carboidrato prescrita.</div>';
+  }
+  if(gli>0&&!low){
+    if(db.isf>0&&db.target>0){
+      corrU=gli>db.target?cbHalf((gli-db.target)/db.isf):0;
+      h+='<div style="margin-top:6px">Correção com insulina regular (('+fnum(gli)+' − '+fnum(db.target)+') ÷ '+fnum(db.isf)+'): <b>'+(corrU>0?fnum(corrU)+' U':'não precisa (glicemia na meta)')+'</b></div>';
+    }else h+='<div class="hint" style="margin:6px 0 0">Para ver a correção, informe em <b>Ajustes</b> o fator de sensibilidade e a glicemia-alvo prescritos.</div>';
+  }
+  var total=(carbU||0)+(corrU||0);
+  if(!low&&total>0){
+    h+='<div style="margin-top:10px">Total estimado</div><strong>≈ '+fnum(total)+' U</strong>'+
+      (total>30?'<p class="hint" style="color:var(--err);margin:6px 0 0"><b>Valor alto: confira os alimentos, as gramas e a glicemia.</b></p>':'')+
+      '<p class="hint" style="margin:6px 0 0">Estimativa feita só com os valores prescritos que você informou. Não considera atividade física, insulina ainda ativa de doses anteriores nem outras orientações. Confirme com o seu médico antes de aplicar.</p>'+
+      '<button class="sec" id="cbUse" type="button">Levar para o registro</button>';
+    est.dataset.u=String(total);
+  }
+  est.innerHTML=h;
 }
 function cbUse(){
   var u=Number($('#cbEst').dataset.u);if(!(u>0))return;
@@ -925,6 +947,21 @@ $('#cbGroup').addEventListener('change',cbFoods);
 $('#cbFood').addEventListener('change',cbInfo);
 $('#cbAdd').addEventListener('click',cbAdd);
 $('#cbGrams').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();cbAdd()}});
+$('#sIsf').addEventListener('change',function(){
+  var v=this.value.trim();
+  if(!v){db.isf=null;persist();cbRender();return}
+  var n=num(v);
+  if(n&&!isNaN(n)&&n>=5&&n<=500){db.isf=n;persist();cbRender();toast('Fator de correção salvo.')}
+  else{this.value=db.isf?fnum(db.isf):'';toast('Informe um valor entre 5 e 500.','err')}
+});
+$('#sTarget').addEventListener('change',function(){
+  var v=this.value.trim();
+  if(!v){db.target=null;persist();cbRender();return}
+  var n=num(v);
+  if(n&&!isNaN(n)&&n>=70&&n<=250){db.target=Math.round(n);persist();cbRender();toast('Glicemia-alvo salva.')}
+  else{this.value=db.target?fnum(db.target):'';toast('Informe um valor entre 70 e 250.','err')}
+});
+$('#cbGli').addEventListener('input',cbRender);
 $('#cbClear').addEventListener('click',function(){cb=[];cbRender()});
 $('#cbList').addEventListener('click',function(e){var b=e.target.closest('button[data-rm]');if(!b)return;cb.splice(Number(b.dataset.rm),1);cbRender()});
 $('#cbEst').addEventListener('click',function(e){if(e.target.closest('#cbUse'))cbUse()});

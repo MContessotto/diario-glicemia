@@ -1,6 +1,6 @@
 /* Service worker: deixa o app funcionar offline.
    Ao publicar uma versão nova do app, aumente o número em VERSION. */
-const VERSION = 'amg-v3';
+const VERSION = 'amg-v4';
 const FILES = [
   './',
   './index.html',
