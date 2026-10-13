@@ -52,6 +52,8 @@ button.danger{background:#fff;color:var(--err);border:1.5px solid var(--err);bor
 .cell{min-height:48px;border:1px solid var(--ln);background:#fafcfc;border-radius:9px;font-size:17px;font-weight:700;color:var(--tx);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2px;line-height:1.1}
 .cell small{font-size:11px;font-weight:400;color:var(--mut);margin-top:2px}
 .cell.empty{color:#b5c0bf;font-weight:400}
+.cell small.tp{color:var(--p);font-weight:700;font-size:10.5px}
+.cell small.tp0{color:#b45309;font-weight:700;font-size:10px}
 .cell.lo{background:var(--lob);border-color:#93b4f5;color:var(--lo)}
 .cell.hi{background:var(--hib);border-color:#f3b183;color:var(--hi)}
 .obsline{display:block;width:100%;text-align:left;background:#f8fafa;border:1px solid var(--ln);border-radius:9px;padding:9px 10px;margin-top:6px;font-size:14px;color:var(--tx)}
@@ -97,6 +99,9 @@ table.rt{border-collapse:collapse;width:100%;table-layout:fixed}
 .rt td.hi::before{content:"▲ "}
 .rt td.obs{text-align:left;font-size:9.5px;line-height:1.2}
 .rt td.dt{font-weight:700}
+.rt small.tpr{font-weight:700;color:#0b5a54;font-size:8.5px}
+.rt small.dz{font-weight:700;font-size:8.5px;margin-top:2px;color:#0b5a54}
+.rt th small{font-weight:400;font-size:8.5px}
 .rt tr{break-inside:avoid;page-break-inside:avoid}
 .rt thead{display:table-header-group}
 .rfoot{margin-top:8px;font-size:10.5px;color:#333}
@@ -145,6 +150,8 @@ table.rt{border-collapse:collapse;width:100%;table-layout:fixed}
     <div id="doseWrap">
       <label class="lbl" for="fDose">Insulina administrada (unidades)</label>
       <input id="fDose" class="big" inputmode="decimal" placeholder="ex.: 6" autocomplete="off">
+      <span class="lbl">Tipo de insulina <b style="color:var(--err)">*</b></span>
+      <div class="chips" id="typeChips"></div>
     </div>
 
     <label class="lbl" for="fObs">Observação (opcional)</label>
@@ -231,6 +238,7 @@ table.rt{border-collapse:collapse;width:100%;table-layout:fixed}
   <h3 id="dlgTitle"></h3>
   <label class="lbl" id="dlgLbl" for="dlgVal"></label>
   <input id="dlgVal" autocomplete="off">
+  <div id="dlgTypeWrap" hidden><span class="lbl">Tipo de insulina</span><div class="chips" id="dlgTypeChips"></div></div>
   <label class="lbl" for="dlgTime">Horário</label>
   <input type="time" id="dlgTime">
   <div class="btns">
@@ -247,6 +255,8 @@ var KEY='amg.v1';
 var MEALS=[{k:'cafe',n:'Café da manhã',s:'Café'},{k:'almoco',n:'Almoço',s:'Almoço'},{k:'lanche',n:'Lanche',s:'Lanche'},{k:'jantar',n:'Jantar',s:'Jantar'}];
 var WD=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
 var FIELDN={antes:'Antes',dose:'Dose de insulina',apos:'2h após'};
+var INS=[{k:'ultra',n:'Ultrarrápida',s:'Ultra'},{k:'rapida',n:'Rápida',s:'Rápida'},{k:'nph',n:'NPH',s:'NPH'},{k:'basal',n:'Basal',s:'Basal'},{k:'mista',n:'Mista',s:'Mista'}];
+var insOf=function(k){var r=INS.filter(function(x){return x.k===k})[0];return r||{k:'sem',n:'Sem tipo',s:'s/ tipo'}};
 
 var pad=function(n){return String(n).padStart(2,'0')};
 var keyOf=function(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())};
@@ -265,11 +275,11 @@ var $$=function(s){return Array.prototype.slice.call(document.querySelectorAll(s
 
 /* ---------- armazenamento ---------- */
 var storageOK=true;
-function defaults(){return {patient:'',low:70,high:180,days:{}}}
+function defaults(){return {patient:'',low:70,high:180,days:{},lastType:{}}}
 function load(){
   try{
     var r=localStorage.getItem(KEY);
-    if(r){var o=JSON.parse(r);var d=defaults();for(var k in o)d[k]=o[k];if(!d.days)d.days={};return d}
+    if(r){var o=JSON.parse(r);var d=defaults();for(var k in o)d[k]=o[k];if(!d.days)d.days={};if(!d.lastType)d.lastType={};return d}
   }catch(e){storageOK=false}
   return defaults();
 }
@@ -288,21 +298,22 @@ try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist()}
 showWarn();
 
 /* ---------- acesso aos dados ---------- */
-function getSlot(k,m,f){var d=db.days[k];if(!d)return;return m==='deitar'?d.deitar:(d[m]&&d[m][f])}
-function setSlot(k,m,f,v,t){
+function getSlot(k,m,f){var d=db.days[k];if(!d)return;return m==='deitar'?(f==='dose'?d.deitarDose:d.deitar):(d[m]&&d[m][f])}
+function setSlot(k,m,f,v,t,tp){
   var d=db.days[k]||(db.days[k]={obs:[]});
   if(!d.obs)d.obs=[];
-  if(m==='deitar')d.deitar={v:v,t:t};
-  else{(d[m]||(d[m]={}))[f]={v:v,t:t}}
+  var o={v:v,t:t};if(tp)o.tp=tp;
+  if(m==='deitar'){if(f==='dose')d.deitarDose=o;else d.deitar=o}
+  else{(d[m]||(d[m]={}))[f]=o}
 }
 function clean(k){
   var d=db.days[k];if(!d)return;
-  var has=MEALS.some(function(x){return d[x.k]})||d.deitar||(d.obs&&d.obs.length);
+  var has=MEALS.some(function(x){return d[x.k]})||d.deitar||d.deitarDose||(d.obs&&d.obs.length);
   if(!has)delete db.days[k];
 }
 function delSlot(k,m,f){
   var d=db.days[k];if(!d)return;
-  if(m==='deitar')delete d.deitar;
+  if(m==='deitar'){if(f==='dose')delete d.deitarDose;else delete d.deitar}
   else if(d[m]){delete d[m][f];if(!Object.keys(d[m]).length)delete d[m]}
   clean(k);
 }
@@ -318,6 +329,7 @@ function toast(msg,kind){
 /* ---------- estado do formulário ---------- */
 var sel={meal:'cafe',moment:'antes'};
 var touched=false, manualWhen=false;
+function lastTypeFor(m){return (db.lastType&&db.lastType[m])||''}
 
 function getWhen(){
   if(manualWhen)return {d:$('#fDate').value||todayKey(),t:$('#fTime').value||nowTime()};
@@ -342,16 +354,19 @@ function buildChips(){
   MEALS.forEach(function(m){h+='<button type="button" data-meal="'+m.k+'">'+m.s+'</button>'});
   h+='<button type="button" data-meal="deitar">Ao deitar</button>';
   $('#mealChips').innerHTML=h;
+  var t='';INS.forEach(function(x){t+='<button type="button" data-t="'+x.k+'">'+x.n+'</button>'});
+  $('#typeChips').innerHTML=t;$('#dlgTypeChips').innerHTML=t;
 }
 function applySel(){
   $$('#mealChips button').forEach(function(b){b.classList.toggle('on',b.dataset.meal===sel.meal)});
   $$('#momentSeg button').forEach(function(b){b.classList.toggle('on',b.dataset.m===sel.moment)});
   $('#momentWrap').hidden=sel.meal==='deitar';
-  $('#doseWrap').hidden=!(sel.meal!=='deitar'&&sel.moment==='antes');
+  $$('#typeChips button').forEach(function(b){b.classList.toggle('on',b.dataset.t===sel.type)});
+  $('#doseWrap').hidden=!(sel.meal==='deitar'||sel.moment==='antes');
 }
 function autoSuggest(){
   if(touched)return;
-  var w=getWhen();sel=suggest(w.d,w.t);applySel();
+  var w=getWhen();sel=suggest(w.d,w.t);sel.type=lastTypeFor(sel.meal);applySel();
 }
 function updateWhenText(){
   var w=getWhen();
@@ -363,9 +378,10 @@ function save(){
   var w=getWhen(),d=w.d,t=w.t;
   var gli=num($('#fGli').value),dose=num($('#fDose').value),obs=$('#fObs').value.trim();
   var m=sel.meal,mo=sel.moment;
-  var useDose=(m!=='deitar'&&mo==='antes');
+  var useDose=(m==='deitar'||mo==='antes');
   if(gli!==null&&(isNaN(gli)||gli<10||gli>1000))return toast('Glicemia inválida. Use um valor entre 10 e 1000 mg/dL.','err');
   if(useDose&&dose!==null&&(isNaN(dose)||dose<0||dose>300))return toast('Dose de insulina inválida.','err');
+  if(useDose&&dose!==null&&!sel.type)return toast('Escolha o tipo de insulina (ultrarrápida, rápida, NPH, basal ou mista).','err');
   if(gli===null&&!(useDose&&dose!==null)&&!obs)return toast('Digite a glicemia, a dose ou uma observação.','err');
   var field=m==='deitar'?null:mo;
   var mealName=m==='deitar'?'Ao deitar':MEALS.filter(function(x){return x.k===m})[0].s;
@@ -383,8 +399,9 @@ function save(){
   if(useDose&&dose!==null){
     var exd=getSlot(d,m,'dose');
     if(exd&&exd.v!==dose&&!confirm('Já existe dose de '+fnum(exd.v)+' U lançada em '+mealName+'. Substituir por '+fnum(dose)+' U?'))return;
-    setSlot(d,m,'dose',dose,t);
-    parts.push(fnum(dose)+' U de insulina');
+    setSlot(d,m,'dose',dose,t,sel.type);
+    db.lastType[m]=sel.type;
+    parts.push(fnum(dose)+' U '+insOf(sel.type).n.toLowerCase());
   }
   if(obs){
     var dd=db.days[d]||(db.days[d]={obs:[]});
@@ -406,7 +423,7 @@ function cellHtml(k,m,f){
   var inner;
   if(s){
     if(f!=='dose')cls+=' '+flag(s.v);
-    inner=(f==='dose'?fnum(s.v):s.v)+(s.t?'<small>'+s.t+'</small>':'');
+    inner=(f==='dose'?fnum(s.v):s.v)+(s.t?'<small>'+s.t+'</small>':'')+(f==='dose'?(s.tp?'<small class="tp">'+insOf(s.tp).s+'</small>':'<small class="tp0">sem tipo</small>'):'');
   }else{cls+=' empty';inner='+'}
   return '<button type="button" class="'+cls+'" data-k="'+k+'" data-m="'+m+'" data-f="'+(f||'')+'">'+inner+'</button>';
 }
@@ -422,7 +439,7 @@ function dayCard(k){
   MEALS.forEach(function(m){
     h+='<span class="ml">'+m.s+'</span>'+cellHtml(k,m.k,'antes')+cellHtml(k,m.k,'dose')+cellHtml(k,m.k,'apos');
   });
-  h+='<span class="ml">Ao deitar</span>'+cellHtml(k,'deitar',null)+'<span></span><span></span></div>';
+  h+='<span class="ml">Ao deitar</span>'+cellHtml(k,'deitar',null)+cellHtml(k,'deitar','dose')+'<span></span></div>';
   (d.obs||[]).forEach(function(o,i){
     h+='<button type="button" class="obsline" data-k="'+k+'" data-m="obs" data-i="'+i+'">🕒 '+(o.t||'--:--')+(o.m?' · '+mealShort(o.m):'')+' — '+esc(o.text)+'</button>';
   });
@@ -480,12 +497,14 @@ function openEdit(k,m,f,i){
     if(o){cur=o.text;time=o.t||'';exists=true}else time=isToday?nowTime():'';
   }else{
     var s=getSlot(k,m,f);
-    title=(m==='deitar'?'Ao deitar':mealShort(m)+' · '+FIELDN[f])+' · '+fmtDate(k);
+    title=(m==='deitar'?'Ao deitar'+(f==='dose'?' · '+FIELDN.dose:''):mealShort(m)+' · '+FIELDN[f])+' · '+fmtDate(k);
     label=f==='dose'?'Insulina administrada (unidades)':'Glicemia (mg/dL)';
     if(s){cur=String(s.v).replace('.',',');time=s.t||'';exists=true}else time=isToday?nowTime():'';
+    edit.tp=(s&&s.tp)||(f==='dose'?lastTypeFor(m):'');
   }
   $('#dlgTitle').textContent=title;
   $('#dlgLbl').textContent=label;
+  $('#dlgTypeWrap').hidden=!(m!=='obs'&&f==='dose');renderDlgType();
   var v=$('#dlgVal');v.value=cur;
   v.setAttribute('inputmode',isTxt?'text':(f==='dose'?'decimal':'numeric'));
   v.type='text';
@@ -495,6 +514,7 @@ function openEdit(k,m,f,i){
   if(dlg.showModal)dlg.showModal();else dlg.setAttribute('open','');
   setTimeout(function(){v.focus()},60);
 }
+function renderDlgType(){$$('#dlgTypeChips button').forEach(function(b){b.classList.toggle('on',!!edit&&b.dataset.t===edit.tp)})}
 function closeDlg(){var dlg=$('#dlg');if(dlg.close)dlg.close();else dlg.removeAttribute('open');edit=null}
 function dlgSave(){
   if(!edit)return;
@@ -508,9 +528,10 @@ function dlgSave(){
   }else{
     var n=num(raw);
     if(n===null||isNaN(n))return toast('Digite um valor válido.','err');
-    if(e.f==='dose'){if(n<0||n>300)return toast('Dose inválida.','err')}
+    if(e.f==='dose'){if(n<0||n>300)return toast('Dose inválida.','err');if(!e.tp)return toast('Escolha o tipo de insulina.','err')}
     else{if(n<10||n>1000)return toast('Glicemia inválida (10 a 1000 mg/dL).','err');n=Math.round(n)}
-    setSlot(e.k,e.m,e.f||null,n,t);
+    setSlot(e.k,e.m,e.f||null,n,t,e.f==='dose'?e.tp:undefined);
+    if(e.f==='dose')db.lastType[e.m]=e.tp;
   }
   persist();closeDlg();renderAll();toast('Alteração salva.');
 }
@@ -540,30 +561,38 @@ function periodKeys(){
 }
 var avg=function(a){return a.length?Math.round(a.reduce(function(s,x){return s+x},0)/a.length):null};
 function stats(keys){
-  var all=[],by={antes:[],apos:[],deitar:[]},doses=[];
+  var all=[],by={antes:[],apos:[],deitar:[]},ins={};
   keys.forEach(function(k){
     var d=db.days[k];if(!d)return;
-    var sum=0,has=false;
+    var sums={};
     MEALS.forEach(function(m){
       var x=d[m.k];if(!x)return;
       if(x.antes){all.push(x.antes.v);by.antes.push(x.antes.v)}
       if(x.apos){all.push(x.apos.v);by.apos.push(x.apos.v)}
-      if(x.dose){sum+=x.dose.v;has=true}
+      if(x.dose){var q=x.dose.tp||'sem';sums[q]=(sums[q]||0)+x.dose.v}
     });
     if(d.deitar){all.push(d.deitar.v);by.deitar.push(d.deitar.v)}
-    if(has)doses.push(sum);
+    if(d.deitarDose){var q2=d.deitarDose.tp||'sem';sums[q2]=(sums[q2]||0)+d.deitarDose.v}
+    Object.keys(sums).forEach(function(q){(ins[q]||(ins[q]=[])).push(sums[q])});
   });
   return {
     n:all.length,avg:avg(all),min:all.length?Math.min.apply(null,all):null,max:all.length?Math.max.apply(null,all):null,
     lo:all.filter(function(v){return v<db.low}).length,hi:all.filter(function(v){return v>db.high}).length,
     aAntes:avg(by.antes),aApos:avg(by.apos),aDeitar:avg(by.deitar),
-    dose:doses.length?Math.round(doses.reduce(function(s,x){return s+x},0)/doses.length*10)/10:null
+    ins:Object.keys(ins).map(function(q){var a=ins[q];return {k:q,avg:Math.round(a.reduce(function(s,x){return s+x},0)/a.length*10)/10}}).sort(function(a,b){var ia=INS.map(function(x){return x.k}).indexOf(a.k),ib=INS.map(function(x){return x.k}).indexOf(b.k);return (ia<0?99:ia)-(ib<0?99:ib)})
   };
 }
 function rcell(s,isDose){
   if(!s)return '<td></td>';
   var cls=isDose?'':flag(s.v);
-  return '<td'+(cls?' class="'+cls+'"':'')+'>'+(isDose?fnum(s.v):s.v)+(s.t?'<small>'+s.t+'</small>':'')+'</td>';
+  return '<td'+(cls?' class="'+cls+'"':'')+'>'+(isDose?fnum(s.v):s.v)+(s.t?'<small>'+s.t+'</small>':'')+(isDose?'<small class="tpr">'+(s.tp?insOf(s.tp).s:'s/ tipo')+'</small>':'')+'</td>';
+}
+function deitarCell(d){
+  var s=d.deitar,z=d.deitarDose;
+  if(!s&&!z)return '<td></td>';
+  var cls=s?flag(s.v):'';
+  return '<td'+(cls?' class="'+cls+'"':'')+'>'+(s?s.v+(s.t?'<small>'+s.t+'</small>':''):'')+
+    (z?'<small class="dz">'+insOf(z.tp).s+' '+fnum(z.v)+' U'+(z.t?' · '+z.t:'')+'</small>':'')+'</td>';
 }
 function buildReport(){
   var keys=periodKeys();
@@ -581,13 +610,14 @@ function buildReport(){
   h+='<div>Média antes <b>'+(st.aAntes==null?'—':st.aAntes)+'</b></div>';
   h+='<div>Média 2h após <b>'+(st.aApos==null?'—':st.aApos)+'</b></div>';
   h+='<div>Média ao deitar <b>'+(st.aDeitar==null?'—':st.aDeitar)+'</b></div>';
-  h+='<div>Insulina/dia (média) <b>'+(st.dose==null?'—':fnum(st.dose))+'</b> U</div>';
+  if(st.ins.length)st.ins.forEach(function(x){h+='<div>Insulina '+insOf(x.k).n.toLowerCase()+' (média/dia) <b>'+fnum(x.avg)+'</b> U</div>'});
+  else h+='<div>Insulina (média/dia) <b>—</b></div>';
   h+='</div>';
   h+='<table class="rt"><colgroup><col style="width:82px">';
   for(var c=0;c<12;c++)h+='<col style="width:58px">';
   h+='<col style="width:66px"><col></colgroup><thead><tr><th rowspan="2">Dia/Mês/Ano</th>';
   MEALS.forEach(function(m){h+='<th colspan="3">'+m.n+'</th>'});
-  h+='<th rowspan="2">Glicemia ao deitar</th><th rowspan="2">Obs.</th></tr><tr>';
+  h+='<th rowspan="2">Glicemia ao deitar<small>(e insulina)</small></th><th rowspan="2">Obs.</th></tr><tr>';
   MEALS.forEach(function(){h+='<th>Antes</th><th>2h após</th><th>Dose insulina (unidade)</th>'});
   h+='</tr></thead><tbody>';
   if(!keys.length)h+='<tr><td colspan="15" style="height:60px">Nenhum registro no período selecionado.</td></tr>';
@@ -598,11 +628,11 @@ function buildReport(){
       var x=d[m.k]||{};
       h+=rcell(x.antes)+rcell(x.apos)+rcell(x.dose,true);
     });
-    h+=rcell(d.deitar);
+    h+=deitarCell(d);
     h+='<td class="obs">'+(d.obs||[]).map(function(o){return (o.t?o.t+' ':'')+(o.m?'('+mealShort(o.m)+') ':'')+esc(o.text)}).join('<br>')+'</td></tr>';
   });
   h+='</tbody></table>';
-  h+='<div class="rfoot">Valores de glicemia em mg/dL. O horário de cada registro aparece em tamanho pequeno abaixo do valor. ▼ = abaixo de '+db.low+' · ▲ = acima de '+db.high+' (limites configurados pelo paciente). Registro feito pelo paciente; a interpretação cabe ao médico.</div>';
+  h+='<div class="rfoot">Valores de glicemia em mg/dL. O horário de cada registro e, nas doses de insulina, o tipo (Ultra, Rápida, NPH, Basal, Mista) aparecem em tamanho pequeno abaixo do valor. ▼ = abaixo de '+db.low+' · ▲ = acima de '+db.high+' (limites configurados pelo paciente). Registro feito pelo paciente; a interpretação cabe ao médico.</div>';
   $('#report').innerHTML=h;
   fitPreview();
 }
@@ -624,17 +654,17 @@ function shareText(){
   L.push('Período: '+fmtDate($('#rFrom').value)+' a '+fmtDate($('#rTo').value));
   L.push('Leituras: '+st.n+' · média '+(st.avg==null?'—':st.avg)+' · mín '+(st.min==null?'—':st.min)+' · máx '+(st.max==null?'—':st.max));
   L.push('Abaixo de '+db.low+': '+st.lo+' · Acima de '+db.high+': '+st.hi);
-  if(st.dose!=null)L.push('Insulina/dia (média): '+fnum(st.dose)+' U');
+  st.ins.forEach(function(x){L.push('Insulina '+insOf(x.k).n.toLowerCase()+' (média/dia): '+fnum(x.avg)+' U')});
   L.push('');
-  L.push('_Formato: antes/2h após (dose)_');
+  L.push('_Formato: antes/2h após (dose e tipo)_');
   keys.forEach(function(k){
     var d=db.days[k];if(!d)return;
     var p=[];
     MEALS.forEach(function(m){
       var x=d[m.k];if(!x)return;
-      p.push(m.s+' '+(x.antes?x.antes.v:'–')+'/'+(x.apos?x.apos.v:'–')+(x.dose?' ('+fnum(x.dose.v)+'U)':''));
+      p.push(m.s+' '+(x.antes?x.antes.v:'–')+'/'+(x.apos?x.apos.v:'–')+(x.dose?' ('+fnum(x.dose.v)+'U'+(x.dose.tp?' '+insOf(x.dose.tp).s:'')+')':''));
     });
-    if(d.deitar)p.push('Deitar '+d.deitar.v);
+    if(d.deitar||d.deitarDose)p.push('Deitar '+(d.deitar?d.deitar.v:'–')+(d.deitarDose?' ('+fnum(d.deitarDose.v)+'U'+(d.deitarDose.tp?' '+insOf(d.deitarDose.tp).s:'')+')':''));
     var line=fmtDate(k).slice(0,5)+' '+WD[parseKey(k).getDay()]+': '+p.join(' | ');
     if(d.obs&&d.obs.length)line+=' — Obs: '+d.obs.map(function(o){return o.text}).join('; ');
     L.push(line);
@@ -692,7 +722,15 @@ function tick(){
 /* ---------- eventos ---------- */
 $('#mealChips').addEventListener('click',function(e){
   var b=e.target.closest('button');if(!b)return;
-  touched=true;sel.meal=b.dataset.meal;sel.moment=momentFor(getWhen().d,sel.meal);applySel();
+  touched=true;sel.meal=b.dataset.meal;sel.moment=momentFor(getWhen().d,sel.meal);sel.type=lastTypeFor(sel.meal);applySel();
+});
+$('#typeChips').addEventListener('click',function(e){
+  var b=e.target.closest('button');if(!b)return;
+  touched=true;sel.type=b.dataset.t;applySel();
+});
+$('#dlgTypeChips').addEventListener('click',function(e){
+  var b=e.target.closest('button');if(!b||!edit)return;
+  edit.tp=b.dataset.t;renderDlgType();
 });
 $('#momentSeg').addEventListener('click',function(e){
   var b=e.target.closest('button');if(!b)return;
@@ -712,7 +750,7 @@ $('#btnSave').addEventListener('click',save);
 });
 $('#pending').addEventListener('click',function(e){
   var b=e.target.closest('button[data-pend]');if(!b)return;
-  touched=true;sel={meal:b.dataset.pend,moment:'apos'};applySel();
+  touched=true;sel={meal:b.dataset.pend,moment:'apos',type:''};applySel();
   window.scrollTo(0,0);$('#fGli').focus();
 });
 document.addEventListener('click',function(e){
