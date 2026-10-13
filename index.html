@@ -58,6 +58,16 @@ button.danger{background:#fff;color:var(--err);border:1.5px solid var(--err);bor
 .cell.hi{background:var(--hib);border-color:#f3b183;color:var(--hi)}
 .obsline{display:block;width:100%;text-align:left;background:#f8fafa;border:1px solid var(--ln);border-radius:9px;padding:9px 10px;margin-top:6px;font-size:14px;color:var(--tx)}
 .addobs{background:none;border:0;color:var(--p);font-weight:700;padding:10px 2px 0;font-size:14px}
+.cbrow{display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--ln)}
+.cbrow:last-child{border-bottom:0}
+.cbrow .n{flex:1;font-size:14px;line-height:1.25}
+.cbrow .n small{display:block;color:var(--mut);font-size:12px}
+.cbrow b{font-size:15px;white-space:nowrap}
+.cbrow button{background:none;border:0;color:var(--err);font-size:20px;padding:4px 8px}
+.cbtot{display:flex;justify-content:space-between;align-items:baseline;margin-top:10px;padding:12px;background:#ecfdf5;border:1px solid #6ee7b7;border-radius:12px}
+.cbtot strong{font-size:26px;color:var(--pd)}
+.cbest{margin-top:10px;padding:12px;background:#fff7ed;border:1px solid #fdba74;border-radius:12px}
+.cbest strong{font-size:24px}
 .empty-msg{color:var(--mut);text-align:center;padding:18px 6px}
 nav.tabs{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--ln);display:flex;padding-bottom:env(safe-area-inset-bottom);z-index:6}
 nav.tabs button{flex:1;background:none;border:0;padding:9px 2px 8px;font-size:12px;color:var(--mut);display:flex;flex-direction:column;align-items:center;gap:2px}
@@ -164,6 +174,40 @@ table.rt{border-collapse:collapse;width:100%;table-layout:fixed}
   <div class="card"><h2>Hoje</h2><div id="todayBox"></div></div>
 </section>
 
+<!-- ============ CARBOIDRATOS ============ -->
+<section id="tab-carbo" class="tab">
+  <div class="card">
+    <h2>Calculadora de carboidratos</h2>
+    <label class="lbl" for="cbGroup" style="margin-top:0">Grupo</label>
+    <select id="cbGroup"></select>
+    <div id="cbFoodWrap">
+      <label class="lbl" for="cbFood">Alimento</label>
+      <select id="cbFood"></select>
+    </div>
+    <div id="cbCustomWrap" hidden>
+      <label class="lbl" for="cbName">Nome (opcional)</label>
+      <input id="cbName" type="text" placeholder="ex.: iogurte do rótulo" autocomplete="off">
+      <label class="lbl" for="cbPer100">Carboidratos por 100 g (veja no rótulo)</label>
+      <input id="cbPer100" inputmode="decimal" placeholder="ex.: 12,5" autocomplete="off">
+    </div>
+    <label class="lbl" for="cbGrams">Quantidade comida (gramas)</label>
+    <input id="cbGrams" class="big" inputmode="decimal" placeholder="ex.: 150" autocomplete="off">
+    <p class="hint" id="cbInfo" style="margin:6px 0 0"></p>
+    <button class="primary" id="cbAdd" type="button">Adicionar à refeição</button>
+  </div>
+
+  <div class="card">
+    <h2>Esta refeição</h2>
+    <div id="cbList"></div>
+    <div id="cbTotWrap" hidden>
+      <div class="cbtot"><span>Total de carboidratos</span><strong id="cbTotal">0 g</strong></div>
+      <div id="cbEst" class="cbest" hidden></div>
+      <button class="sec" id="cbClear" type="button">Limpar refeição</button>
+    </div>
+    <p class="hint">Valores da Tabela Brasileira de Composição de Alimentos (TACO, 4ª ed., NEPA/Unicamp), por 100 g do alimento, já com os pesos do preparo indicado (cozido, cru etc.). Pese o alimento no mesmo estado indicado. Carboidratos incluem a fibra. Para produtos industrializados, use "Outro alimento" com o valor do rótulo.</p>
+  </div>
+</section>
+
 <!-- ============ HISTÓRICO ============ -->
 <section id="tab-historico" class="tab">
   <div class="card">
@@ -214,12 +258,18 @@ table.rt{border-collapse:collapse;width:100%;table-layout:fixed}
     <p class="hint">Só destaca valores no app e no relatório (▼ abaixo, ▲ acima). Use os limites que o seu médico definiu.</p>
   </div>
   <div class="card">
+    <h2>Relação insulina/carboidrato</h2>
+    <label class="lbl" for="sRatio" style="margin-top:0">1 unidade de insulina para cada (gramas de carboidrato)</label>
+    <input id="sRatio" inputmode="decimal" placeholder="ex.: 15 (deixe vazio para não usar)">
+    <p class="hint">Preencha somente com a relação que o seu médico prescreveu. Com ela, a calculadora mostra uma <b>estimativa</b> de unidades para conferência. Sem ela, a calculadora só soma os carboidratos.</p>
+  </div>
+  <div class="card">
     <h2>Backup dos dados</h2>
     <p class="hint" style="margin-top:0">Os registros ficam salvos neste navegador. Limpar dados do navegador apaga tudo, então faça backup de vez em quando.</p>
     <button class="sec" id="btnExport" type="button">⬇️ Baixar backup (.json)</button>
     <button class="sec" id="btnImport" type="button">⬆️ Restaurar backup</button>
     <input type="file" id="fileImport" accept=".json,application/json" hidden>
-    <p class="hint" style="text-align:center"><a href="privacidade.html" style="color:var(--p)">Política de privacidade</a> · Este app apenas registra os valores digitados; não calcula doses nem substitui a orientação médica.</p>
+    <p class="hint" style="text-align:center"><a href="privacidade.html" style="color:var(--p)">Política de privacidade</a> · A calculadora de carboidratos é só um apoio de conferência e não substitui a orientação médica.</p>
     <button class="sec" id="btnWipe" type="button" style="color:var(--err);border-color:var(--err)">Apagar todos os registros</button>
   </div>
 </section>
@@ -227,6 +277,7 @@ table.rt{border-collapse:collapse;width:100%;table-layout:fixed}
 
 <nav class="tabs noprint">
   <button data-tab="registrar" class="on"><span>➕</span>Registrar</button>
+  <button data-tab="carbo"><span>🍽️</span>Carbo</button>
   <button data-tab="historico"><span>📋</span>Histórico</button>
   <button data-tab="relatorio"><span>📄</span>Relatório</button>
   <button data-tab="ajustes"><span>⚙️</span>Ajustes</button>
@@ -275,7 +326,7 @@ var $$=function(s){return Array.prototype.slice.call(document.querySelectorAll(s
 
 /* ---------- armazenamento ---------- */
 var storageOK=true;
-function defaults(){return {patient:'',low:70,high:180,days:{},lastType:{}}}
+function defaults(){return {patient:'',low:70,high:180,days:{},lastType:{},ratio:null}}
 function load(){
   try{
     var r=localStorage.getItem(KEY);
@@ -700,6 +751,7 @@ function renderAll(){
   renderToday();renderPending();
   if(curTab==='historico')renderHistory();
   if(curTab==='relatorio')buildReport();
+  if(curTab==='carbo')cbRender();
 }
 function showTab(t){
   curTab=t;
@@ -710,7 +762,7 @@ function showTab(t){
 }
 function syncInputs(){
   $('#rName').value=db.patient||'';
-  $('#sLow').value=db.low;$('#sHigh').value=db.high;
+  $('#sLow').value=db.low;$('#sHigh').value=db.high;$('#sRatio').value=db.ratio?fnum(db.ratio):'';
 }
 function tick(){
   $('#clock').textContent=nowTime();
@@ -792,8 +844,100 @@ $('#btnWipe').addEventListener('click',function(){
 });
 document.addEventListener('visibilitychange',function(){if(!document.hidden)tick()});
 
+
+/* ---------- calculadora de carboidratos (TACO 4ª ed., g de carboidrato por 100 g) ---------- */
+var FOODS=[
+ {g:'Cereais, pães e massas',i:[['Arroz tipo 1, cozido',28.1],['Arroz integral, cozido',25.8],['Pão francês',58.6],['Pão de forma integral',49.9],['Macarrão de trigo, CRU (pesar antes de cozinhar)',77.9],['Macarrão instantâneo, cru',62.4],['Aveia em flocos, crua',66.6],['Farinha de trigo',75.1],['Fubá de milho, cru',78.9],['Polenta pré-cozida',23.3],['Pipoca com óleo, sem sal',70.3],['Milho verde, cru',28.6],['Milho verde enlatado, drenado',17.1]]},
+ {g:'Feijões e leguminosas',i:[['Feijão carioca, cozido',13.6],['Feijão preto, cozido',14.0],['Lentilha, cozida',16.3],['Grão-de-bico, CRU',57.9]]},
+ {g:'Tubérculos e raízes',i:[['Batata inglesa, cozida',11.9],['Batata-doce, cozida',18.4],['Mandioca (aipim), cozida',30.1],['Abóbora cabotiá, cozida',10.8]]},
+ {g:'Frutas',i:[['Banana prata',26.0],['Maçã Fuji, com casca',15.2],['Laranja pêra',8.9],['Mamão papaia',10.4],['Melancia',8.1],['Abacaxi',12.3],['Uva Itália',13.6],['Manga Palmer',19.4],['Morango',6.8]]},
+ {g:'Leite e derivados',i:[['Iogurte natural',1.9],['Leite em pó integral',39.2]]},
+ {g:'Doces, biscoitos e bolos',i:[['Mel de abelha',84.0],['Chocolate ao leite',59.6],['Biscoito maisena',75.2],['Biscoito cream cracker',68.7],['Biscoito recheado de chocolate',70.5],['Biscoito wafer de chocolate',67.5],['Bolo pronto de chocolate',54.7],['Bolo pronto de milho',45.1],['Bolo pronto de aipim',47.9],['Bolo pronto de coco',52.3]]},
+ {g:'Bebidas',i:[['Refrigerante tipo cola',8.7]]},
+ {g:'Salgados fritos',i:[['Pastel de carne, frito',43.8],['Pastel de queijo, frito',48.1]]},
+ {g:'Outro alimento (valor do rótulo)',custom:true,i:[]}
+];
+var cb=[];
+function cbBuild(){
+  var g=$('#cbGroup');g.innerHTML=FOODS.map(function(x,n){return '<option value="'+n+'">'+esc(x.g)+'</option>'}).join('');
+  cbFoods();
+}
+function cbFoods(){
+  var grp=FOODS[Number($('#cbGroup').value)||0];
+  $('#cbFoodWrap').hidden=!!grp.custom;$('#cbCustomWrap').hidden=!grp.custom;
+  $('#cbFood').innerHTML=grp.i.map(function(f,n){return '<option value="'+n+'">'+esc(f[0])+'</option>'}).join('');
+  cbInfo();
+}
+function cbInfo(){
+  var grp=FOODS[Number($('#cbGroup').value)||0];
+  if(grp.custom){$('#cbInfo').textContent='';return}
+  var f=grp.i[Number($('#cbFood').value)||0];
+  $('#cbInfo').textContent=f?('Tem '+fnum(f[1])+' g de carboidrato em cada 100 g.'):'';
+}
+function cbAdd(){
+  var grp=FOODS[Number($('#cbGroup').value)||0],gr=num($('#cbGrams').value),name,per;
+  if(!gr||isNaN(gr)||gr<=0||gr>5000){toast('Informe a quantidade em gramas.','err');return}
+  if(grp.custom){
+    per=num($('#cbPer100').value);
+    if(per==null||isNaN(per)||per<0||per>100){toast('Informe os carboidratos por 100 g (0 a 100), como está no rótulo.','err');return}
+    name=$('#cbName').value.trim()||'Outro alimento';
+  }else{
+    var f=grp.i[Number($('#cbFood').value)||0];name=f[0];per=f[1];
+  }
+  cb.push({n:name,g:gr,p:per,c:gr*per/100});
+  $('#cbGrams').value='';if(grp.custom){$('#cbName').value='';$('#cbPer100').value=''}
+  cbRender();$('#cbGrams').focus();
+}
+function cbRound(v){return Math.round(v*10)/10}
+function cbRender(){
+  var box=$('#cbList');
+  if(!cb.length){box.innerHTML='<div class="empty-msg">Adicione os alimentos da refeição.</div>';$('#cbTotWrap').hidden=true;return}
+  box.innerHTML=cb.map(function(x,n){
+    return '<div class="cbrow"><div class="n">'+esc(x.n)+'<small>'+fnum(cbRound(x.g))+' g · '+fnum(x.p)+' g/100 g</small></div><b>'+fnum(cbRound(x.c))+' g</b><button type="button" data-rm="'+n+'" aria-label="Remover">✕</button></div>';
+  }).join('');
+  var tot=cb.reduce(function(a,x){return a+x.c},0);
+  $('#cbTotal').textContent=fnum(cbRound(tot))+' g';
+  $('#cbTotWrap').hidden=false;
+  var est=$('#cbEst');
+  if(db.ratio>0){
+    var u=Math.round(tot/db.ratio*2)/2;
+    est.hidden=false;
+    est.innerHTML='<span class="hint" style="margin:0;display:block">Estimativa com a sua relação (1 U para cada '+fnum(db.ratio)+' g)</span><strong>≈ '+fnum(u)+' U</strong>'+
+      (u>30?'<p class="hint" style="color:var(--err);margin:6px 0 0"><b>Valor alto: confira os alimentos e as gramas.</b></p>':'')+
+      '<p class="hint" style="margin:6px 0 0">Conta só os carboidratos: não considera a glicemia do momento, atividade física nem outras orientações. Confirme com o seu médico antes de aplicar.</p>'+
+      '<button class="sec" id="cbUse" type="button">Levar para o registro</button>';
+    est.dataset.u=String(u);
+  }else{
+    est.hidden=false;est.removeAttribute('data-u');
+    est.innerHTML='<span class="hint" style="margin:0">Para ver uma estimativa de unidades, informe em <b>Ajustes</b> a relação insulina/carboidrato prescrita pelo seu médico.</span>';
+  }
+}
+function cbUse(){
+  var u=Number($('#cbEst').dataset.u);if(!(u>0))return;
+  if(sel.meal!=='deitar'&&sel.moment!=='antes'){sel.moment='antes';applySel()}
+  showTab('registrar');
+  $('#fDose').value=fnum(u);touched=true;
+  toast('Valor levado para o registro. Escolha o tipo de insulina e confira antes de salvar.','warn');
+}
+
+
+$('#cbGroup').addEventListener('change',cbFoods);
+$('#cbFood').addEventListener('change',cbInfo);
+$('#cbAdd').addEventListener('click',cbAdd);
+$('#cbGrams').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();cbAdd()}});
+$('#cbClear').addEventListener('click',function(){cb=[];cbRender()});
+$('#cbList').addEventListener('click',function(e){var b=e.target.closest('button[data-rm]');if(!b)return;cb.splice(Number(b.dataset.rm),1);cbRender()});
+$('#cbEst').addEventListener('click',function(e){if(e.target.closest('#cbUse'))cbUse()});
+$('#sRatio').addEventListener('change',function(){
+  var v=this.value.trim();
+  if(!v){db.ratio=null;persist();cbRender();return}
+  var n=num(v);
+  if(n&&!isNaN(n)&&n>=1&&n<=200){db.ratio=n;persist();cbRender();toast('Relação salva.')}
+  else{this.value=db.ratio?fnum(db.ratio):'';toast('Informe um valor entre 1 e 200.','err')}
+});
+
 /* ---------- início ---------- */
-buildChips();syncInputs();
+buildChips();syncInputs();cbBuild();cbRender();
 setRange(14);
 autoSuggest();tick();renderAll();
 setInterval(tick,15000);
