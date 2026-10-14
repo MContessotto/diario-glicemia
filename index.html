@@ -13,6 +13,7 @@
 :root{--p:#0f766e;--pd:#0b5a54;--bg:#f2f6f5;--card:#fff;--tx:#17212b;--mut:#6b7785;--ln:#dfe6e5;--lo:#1d4ed8;--hi:#c2410c;--lob:#dbeafe;--hib:#ffedd5;--err:#b91c1c}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0}
+[hidden]{display:none!important}
 body{font:16px/1.4 system-ui,-apple-system,Roboto,"Segoe UI",sans-serif;background:var(--bg);color:var(--tx);padding-bottom:calc(78px + env(safe-area-inset-bottom))}
 header{background:var(--p);color:#fff;padding:10px 16px;padding-top:calc(10px + env(safe-area-inset-top));position:sticky;top:0;z-index:5;display:flex;justify-content:space-between;align-items:center}
 header h1{font-size:18px;margin:0}
@@ -28,8 +29,8 @@ header p{margin:0;font-size:13px;opacity:.85}
 .when strong{font-size:17px}
 .when .lbl{margin:0 0 2px}
 .link{background:none;border:0;color:var(--p);font-weight:700;font-size:15px;padding:8px}
-.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
-input,textarea,select{width:100%;font:inherit;font-size:16px;padding:12px;border:1.5px solid #cdd8d6;border-radius:10px;background:#fff;color:var(--tx)}
+.row2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin-top:6px}
+input,textarea,select{width:100%;min-width:0;font:inherit;font-size:16px;padding:12px;border:1.5px solid #cdd8d6;border-radius:10px;background:#fff;color:var(--tx)}
 input:focus{outline:none;border-color:var(--p);box-shadow:0 0 0 3px rgba(15,118,110,.15)}
 input.big{font-size:26px;font-weight:700;text-align:center;padding:14px}
 .chips{display:flex;flex-wrap:wrap;gap:8px}
@@ -58,6 +59,11 @@ button.danger{background:#fff;color:var(--err);border:1.5px solid var(--err);bor
 .cell.hi{background:var(--hib);border-color:#f3b183;color:var(--hi)}
 .obsline{display:block;width:100%;text-align:left;background:#f8fafa;border:1px solid var(--ln);border-radius:9px;padding:9px 10px;margin-top:6px;font-size:14px;color:var(--tx)}
 .addobs{background:none;border:0;color:var(--p);font-weight:700;padding:10px 2px 0;font-size:14px}
+.addrow{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;margin-top:8px}
+.addrow .addobs{padding:8px 2px}
+.addx{background:#fff;border:1.5px dashed var(--p);color:var(--p);border-radius:999px;padding:8px 14px;font-weight:700;font-size:14px}
+.chips button.xtra{border-style:dashed;color:var(--p)}
+.chips button.xtra.on{border-style:solid;color:#fff}
 .cbrow{display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--ln)}
 .cbrow:last-child{border-bottom:0}
 .cbrow .n{flex:1;font-size:14px;line-height:1.25}
@@ -68,6 +74,11 @@ button.danger{background:#fff;color:var(--err);border:1.5px solid var(--err);bor
 .cbtot strong{font-size:26px;color:var(--pd)}
 .cbest{margin-top:10px;padding:12px;background:#fff7ed;border:1px solid #fdba74;border-radius:12px}
 .cbest strong{font-size:24px}
+#cbCorr .row2{align-items:end}
+.cbratio{margin-top:10px;padding:10px 12px;background:#f8fafa;border:1px solid var(--ln);border-radius:12px}
+.cbratio label{display:block;font-size:13px;font-weight:600;color:var(--mut);margin-bottom:6px}
+.cbratio .in{display:flex;align-items:center;gap:8px;font-size:15px}
+.cbratio .in input{width:92px;text-align:center;font-size:20px;font-weight:700;padding:9px 6px}
 .empty-msg{color:var(--mut);text-align:center;padding:18px 6px}
 nav.tabs{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--ln);display:flex;padding-bottom:env(safe-area-inset-bottom);z-index:6}
 nav.tabs button{flex:1;background:none;border:0;padding:9px 2px 8px;font-size:12px;color:var(--mut);display:flex;flex-direction:column;align-items:center;gap:2px}
@@ -111,6 +122,12 @@ table.rt{border-collapse:collapse;width:100%;table-layout:fixed}
 .rt td.dt{font-weight:700}
 .rt small.tpr{font-weight:700;color:#0b5a54;font-size:8.5px}
 .rt small.dz{font-weight:700;font-size:8.5px;margin-top:2px;color:#0b5a54}
+.rt small.xg{font-weight:700;font-size:8.5px;margin-top:1px}
+.rt small.xg.lo{color:#1d4ed8}
+.rt small.xg.hi{color:#c2410c}
+.rtx td{font-size:12px}
+.rtx thead th{font-size:10.5px}
+.rtx3 thead th{font-size:10px}
 .rt th small{font-weight:400;font-size:8.5px}
 .rt tr{break-inside:avoid;page-break-inside:avoid}
 .rt thead{display:table-header-group}
@@ -154,11 +171,11 @@ table.rt{border-collapse:collapse;width:100%;table-layout:fixed}
       <div class="seg" id="momentSeg"><button type="button" data-m="antes">Antes</button><button type="button" data-m="apos">2h após</button></div>
     </div>
 
-    <label class="lbl" for="fGli">Glicemia (mg/dL)</label>
+    <label class="lbl" for="fGli" id="lblGli">Glicemia (mg/dL)</label>
     <input id="fGli" class="big" inputmode="numeric" pattern="[0-9]*" placeholder="ex.: 110" autocomplete="off">
 
     <div id="doseWrap">
-      <label class="lbl" for="fDose">Insulina administrada (unidades)</label>
+      <label class="lbl" for="fDose" id="lblDose">Insulina administrada (unidades)</label>
       <input id="fDose" class="big" inputmode="decimal" placeholder="ex.: 6" autocomplete="off">
       <span class="lbl">Tipo de insulina <b style="color:var(--err)">*</b></span>
       <div class="chips" id="typeChips"></div>
@@ -168,7 +185,7 @@ table.rt{border-collapse:collapse;width:100%;table-layout:fixed}
     <input id="fObs" type="text" placeholder="ex.: exercício, mal-estar, refeição maior" autocomplete="off">
 
     <button class="primary" id="btnSave" type="button">Salvar registro</button>
-    <p class="hint">Data e hora são preenchidas sozinhas. A refeição é sugerida pelo horário e pelo que já foi lançado hoje.</p>
+    <p class="hint">Data e hora são preenchidas sozinhas. A refeição é sugerida pelo horário e pelo que já foi lançado hoje. Precisou de uma aplicação a mais? Toque em “+ Dose extra”.</p>
   </div>
 
   <div class="card"><h2>Hoje</h2><div id="todayBox"></div></div>
@@ -180,6 +197,13 @@ table.rt{border-collapse:collapse;width:100%;table-layout:fixed}
     <h2>Calculadora de carboidratos</h2>
     <label class="lbl" for="cbGli" style="margin-top:0">Glicemia atual (mg/dL), para correção</label>
     <input id="cbGli" inputmode="numeric" placeholder="opcional" autocomplete="off">
+    <div id="cbCorr" hidden>
+      <div class="row2">
+        <div><label class="lbl" for="cbIsf">1 U de regular baixa (mg/dL)</label><input id="cbIsf" inputmode="decimal" placeholder="ex.: 40" autocomplete="off"></div>
+        <div><label class="lbl" for="cbTarget">Glicemia-alvo (mg/dL)</label><input id="cbTarget" inputmode="numeric" placeholder="ex.: 100" autocomplete="off"></div>
+      </div>
+      <p class="hint" style="margin:6px 0 0">Valores da correção prescritos pelo seu médico. Ficam salvos neste aparelho (e também em Ajustes).</p>
+    </div>
     <label class="lbl" for="cbGroup">Grupo</label>
     <select id="cbGroup"></select>
     <div id="cbFoodWrap">
@@ -204,6 +228,7 @@ table.rt{border-collapse:collapse;width:100%;table-layout:fixed}
     <div id="cbTotWrap" hidden>
       <div class="cbtot"><span>Total de carboidratos</span><strong id="cbTotal">0 g</strong></div>
       <button class="sec" id="cbClear" type="button">Limpar refeição</button>
+      <div class="cbratio"><label for="cbRatio">Sua relação insulina/carboidrato (prescrita pelo médico)</label><div class="in"><span>1 unidade para cada</span><input id="cbRatio" inputmode="decimal" placeholder="ex.: 15" autocomplete="off"><span>g</span></div></div>
     </div>
     <div id="cbEst" class="cbest" hidden></div>
     <p class="hint">Valores da Tabela Brasileira de Composição de Alimentos (TACO, 4ª ed., NEPA/Unicamp), por 100 g do alimento, já com os pesos do preparo indicado (cozido, cru etc.). Pese o alimento no mesmo estado indicado. Carboidratos incluem a fibra. Para produtos industrializados, use "Outro alimento" com o valor do rótulo.</p>
@@ -296,6 +321,7 @@ table.rt{border-collapse:collapse;width:100%;table-layout:fixed}
   <label class="lbl" id="dlgLbl" for="dlgVal"></label>
   <input id="dlgVal" autocomplete="off">
   <div id="dlgTypeWrap" hidden><span class="lbl">Tipo de insulina</span><div class="chips" id="dlgTypeChips"></div></div>
+  <div id="dlgGliWrap" hidden><label class="lbl" for="dlgGli">Glicemia neste momento (mg/dL, opcional)</label><input id="dlgGli" inputmode="numeric" autocomplete="off"></div>
   <label class="lbl" for="dlgTime">Horário</label>
   <input type="time" id="dlgTime">
   <div class="btns">
@@ -312,6 +338,7 @@ var KEY='amg.v1';
 var MEALS=[{k:'cafe',n:'Café da manhã',s:'Café'},{k:'almoco',n:'Almoço',s:'Almoço'},{k:'lanche',n:'Lanche',s:'Lanche'},{k:'jantar',n:'Jantar',s:'Jantar'}];
 var WD=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
 var FIELDN={antes:'Antes',dose:'Dose de insulina',apos:'2h após'};
+var MAXX=4; /* máximo de doses extras por dia (cabem como colunas no relatório) */
 var INS=[{k:'ultra',n:'Ultrarrápida',s:'Ultra'},{k:'rapida',n:'Rápida',s:'Rápida'},{k:'nph',n:'NPH',s:'NPH'},{k:'basal',n:'Basal',s:'Basal'},{k:'mista',n:'Mista',s:'Mista'}];
 var insOf=function(k){var r=INS.filter(function(x){return x.k===k})[0];return r||{k:'sem',n:'Sem tipo',s:'s/ tipo'}};
 
@@ -355,6 +382,8 @@ try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist()}
 showWarn();
 
 /* ---------- acesso aos dados ---------- */
+function xs(d){return d&&Array.isArray(d.extra)?d.extra:[]}
+function sortX(d){var z=function(x){return x.t||'99:99'};d.extra.sort(function(a,b){return z(a)<z(b)?-1:(z(a)>z(b)?1:0)})}
 function getSlot(k,m,f){var d=db.days[k];if(!d)return;return m==='deitar'?(f==='dose'?d.deitarDose:d.deitar):(d[m]&&d[m][f])}
 function setSlot(k,m,f,v,t,tp){
   var d=db.days[k]||(db.days[k]={obs:[]});
@@ -365,7 +394,7 @@ function setSlot(k,m,f,v,t,tp){
 }
 function clean(k){
   var d=db.days[k];if(!d)return;
-  var has=MEALS.some(function(x){return d[x.k]})||d.deitar||d.deitarDose||(d.obs&&d.obs.length);
+  var has=MEALS.some(function(x){return d[x.k]})||d.deitar||d.deitarDose||(d.obs&&d.obs.length)||xs(d).length;
   if(!has)delete db.days[k];
 }
 function delSlot(k,m,f){
@@ -410,6 +439,7 @@ function buildChips(){
   var h='';
   MEALS.forEach(function(m){h+='<button type="button" data-meal="'+m.k+'">'+m.s+'</button>'});
   h+='<button type="button" data-meal="deitar">Ao deitar</button>';
+  h+='<button type="button" data-meal="extra" class="xtra">+ Dose extra</button>';
   $('#mealChips').innerHTML=h;
   var t='';INS.forEach(function(x){t+='<button type="button" data-t="'+x.k+'">'+x.n+'</button>'});
   $('#typeChips').innerHTML=t;$('#dlgTypeChips').innerHTML=t;
@@ -417,9 +447,13 @@ function buildChips(){
 function applySel(){
   $$('#mealChips button').forEach(function(b){b.classList.toggle('on',b.dataset.meal===sel.meal)});
   $$('#momentSeg button').forEach(function(b){b.classList.toggle('on',b.dataset.m===sel.moment)});
-  $('#momentWrap').hidden=sel.meal==='deitar';
+  var ex=sel.meal==='extra';
+  $('#momentWrap').hidden=sel.meal==='deitar'||ex;
   $$('#typeChips button').forEach(function(b){b.classList.toggle('on',b.dataset.t===sel.type)});
-  $('#doseWrap').hidden=!(sel.meal==='deitar'||sel.moment==='antes');
+  $('#doseWrap').hidden=!(sel.meal==='deitar'||ex||sel.moment==='antes');
+  $('#lblGli').textContent=ex?'Glicemia neste momento (mg/dL, opcional)':'Glicemia (mg/dL)';
+  $('#lblDose').textContent=ex?'Dose extra de insulina (unidades)':'Insulina administrada (unidades)';
+  $('#btnSave').textContent=ex?'Salvar dose extra':'Salvar registro';
 }
 function autoSuggest(){
   if(touched)return;
@@ -435,6 +469,7 @@ function save(){
   var w=getWhen(),d=w.d,t=w.t;
   var gli=num($('#fGli').value),dose=num($('#fDose').value),obs=$('#fObs').value.trim();
   var m=sel.meal,mo=sel.moment;
+  if(m==='extra')return saveExtra(d,t,gli,dose,obs);
   var useDose=(m==='deitar'||mo==='antes');
   if(gli!==null&&(isNaN(gli)||gli<10||gli>1000))return toast('Glicemia inválida. Use um valor entre 10 e 1000 mg/dL.','err');
   if(useDose&&dose!==null&&(isNaN(dose)||dose<0||dose>300))return toast('Dose de insulina inválida.','err');
@@ -473,6 +508,30 @@ function save(){
   touched=false;autoSuggest();renderAll();
 }
 
+function saveExtra(d,t,gli,dose,obs){
+  if(dose===null||isNaN(dose)||dose<=0||dose>300)return toast('Digite a dose extra em unidades.','err');
+  if(!sel.type)return toast('Escolha o tipo de insulina (ultrarrápida, rápida, NPH, basal ou mista).','err');
+  if(gli!==null&&(isNaN(gli)||gli<10||gli>1000))return toast('Glicemia inválida. Use um valor entre 10 e 1000 mg/dL.','err');
+  var dd=db.days[d]||(db.days[d]={obs:[]});
+  if(!dd.obs)dd.obs=[];
+  if(xs(dd).length>=MAXX)return toast('Limite de '+MAXX+' doses extras por dia. Edite ou exclua uma delas.','err');
+  if(!Array.isArray(dd.extra))dd.extra=[];
+  var rec={v:dose,t:t,tp:sel.type},parts=[fnum(dose)+' U '+insOf(sel.type).n.toLowerCase()],kind='';
+  if(gli!==null){
+    rec.g=Math.round(gli);parts.push(rec.g+' mg/dL');
+    var f=flag(rec.g);
+    if(f==='lo'){kind='warn';parts.push('abaixo de '+db.low+'. Siga a orientação do seu médico')}
+    if(f==='hi'){kind='warn';parts.push('acima de '+db.high)}
+  }
+  dd.extra.push(rec);sortX(dd);
+  db.lastType.extra=sel.type;
+  if(obs){dd.obs.push({t:t,text:obs,m:'extra'});parts.push('observação')}
+  persist();
+  toast('Salvo às '+t+': Dose extra → '+parts.join(' · '),kind);
+  $('#fGli').value='';$('#fDose').value='';$('#fObs').value='';
+  touched=false;autoSuggest();renderAll();
+}
+
 /* ---------- cards de dia ---------- */
 function cellHtml(k,m,f){
   var s=getSlot(k,m,f);
@@ -486,7 +545,14 @@ function cellHtml(k,m,f){
 }
 function mealShort(m){
   if(m==='deitar')return 'Ao deitar';
+  if(m==='extra')return 'Dose extra';
   var x=MEALS.filter(function(y){return y.k===m})[0];return x?x.s:'';
+}
+function xRow(k,i,x){
+  var a=' data-k="'+k+'" data-m="extra" data-i="'+i+'"',g=x.g!=null;
+  return '<span class="ml">Extra '+(i+1)+'</span>'+
+    '<button type="button" class="cell'+(g?' '+flag(x.g):' empty')+'"'+a+'>'+(g?esc(x.g):'–')+'</button>'+
+    '<button type="button" class="cell"'+a+'>'+esc(fnum(x.v))+(x.t?'<small>'+esc(x.t)+'</small>':'')+(x.tp?'<small class="tp">'+insOf(x.tp).s+'</small>':'<small class="tp0">sem tipo</small>')+'</button><span></span>';
 }
 function dayCard(k){
   var d=db.days[k]||{};
@@ -496,11 +562,14 @@ function dayCard(k){
   MEALS.forEach(function(m){
     h+='<span class="ml">'+m.s+'</span>'+cellHtml(k,m.k,'antes')+cellHtml(k,m.k,'dose')+cellHtml(k,m.k,'apos');
   });
-  h+='<span class="ml">Ao deitar</span>'+cellHtml(k,'deitar',null)+cellHtml(k,'deitar','dose')+'<span></span></div>';
+  h+='<span class="ml">Ao deitar</span>'+cellHtml(k,'deitar',null)+cellHtml(k,'deitar','dose')+'<span></span>';
+  xs(d).forEach(function(x,i){h+=xRow(k,i,x)});
+  h+='</div>';
   (d.obs||[]).forEach(function(o,i){
     h+='<button type="button" class="obsline" data-k="'+k+'" data-m="obs" data-i="'+i+'">🕒 '+(o.t||'--:--')+(o.m?' · '+mealShort(o.m):'')+' — '+esc(o.text)+'</button>';
   });
-  h+='<button type="button" class="addobs" data-k="'+k+'" data-m="obs" data-i="new">+ observação</button></div>';
+  h+='<div class="addrow"><button type="button" class="addx" data-k="'+k+'" data-m="extra" data-i="new">+ dose extra</button>'+
+    '<button type="button" class="addobs" data-k="'+k+'" data-m="obs" data-i="new">+ observação</button></div></div>';
   return h;
 }
 function renderToday(){$('#todayBox').innerHTML=dayCard(todayKey()).replace('<div class="card">','<div>').replace(/<h2>.*?<\/h2>/,'')}
@@ -545,10 +614,16 @@ function renderHistory(){
 /* ---------- edição (diálogo) ---------- */
 var edit=null;
 function openEdit(k,m,f,i){
+  if(m==='extra'&&i==='new'&&xs(db.days[k]).length>=MAXX)return toast('Limite de '+MAXX+' doses extras por dia. Edite ou exclua uma delas.','err');
   edit={k:k,m:m,f:f,i:i};
-  var title,label,cur='',time='',exists=false,isTxt=false;
+  var title,label,cur='',time='',exists=false,isTxt=false,gcur='';
   var isToday=k===todayKey();
-  if(m==='obs'){
+  if(m==='extra'){
+    var x=i==='new'?null:xs(db.days[k])[Number(i)];
+    title='Dose extra'+(x?' '+(Number(i)+1):'')+' · '+fmtDate(k);label='Dose extra de insulina (unidades)';
+    if(x){cur=String(x.v).replace('.',',');time=x.t||'';exists=true;gcur=x.g!=null?String(x.g):''}else time=isToday?nowTime():'';
+    edit.tp=(x&&x.tp)||lastTypeFor('extra');
+  }else if(m==='obs'){
     var o=i==='new'?null:(db.days[k].obs||[])[Number(i)];
     title='Observação · '+fmtDate(k);label='Texto';isTxt=true;
     if(o){cur=o.text;time=o.t||'';exists=true}else time=isToday?nowTime():'';
@@ -561,9 +636,10 @@ function openEdit(k,m,f,i){
   }
   $('#dlgTitle').textContent=title;
   $('#dlgLbl').textContent=label;
-  $('#dlgTypeWrap').hidden=!(m!=='obs'&&f==='dose');renderDlgType();
+  $('#dlgTypeWrap').hidden=!(m==='extra'||(m!=='obs'&&f==='dose'));renderDlgType();
+  $('#dlgGliWrap').hidden=m!=='extra';$('#dlgGli').value=gcur;
   var v=$('#dlgVal');v.value=cur;
-  v.setAttribute('inputmode',isTxt?'text':(f==='dose'?'decimal':'numeric'));
+  v.setAttribute('inputmode',isTxt?'text':((m==='extra'||f==='dose')?'decimal':'numeric'));
   v.type='text';
   $('#dlgTime').value=time;
   $('#dlgDel').style.visibility=exists?'visible':'hidden';
@@ -576,7 +652,19 @@ function closeDlg(){var dlg=$('#dlg');if(dlg.close)dlg.close();else dlg.removeAt
 function dlgSave(){
   if(!edit)return;
   var e=edit,t=$('#dlgTime').value||'',raw=$('#dlgVal').value.trim();
-  if(e.m==='obs'){
+  if(e.m==='extra'){
+    var q=num(raw),g=num($('#dlgGli').value);
+    if(q===null||isNaN(q)||q<=0||q>300)return toast('Digite a dose em unidades.','err');
+    if(!e.tp)return toast('Escolha o tipo de insulina.','err');
+    if(g!==null&&(isNaN(g)||g<10||g>1000))return toast('Glicemia inválida (10 a 1000 mg/dL).','err');
+    var dx=db.days[e.k]||(db.days[e.k]={obs:[]});
+    if(!dx.obs)dx.obs=[];
+    if(e.i==='new'&&xs(dx).length>=MAXX)return toast('Limite de '+MAXX+' doses extras por dia.','err');
+    if(!Array.isArray(dx.extra))dx.extra=[];
+    var rec={v:q,t:t,tp:e.tp};if(g!==null)rec.g=Math.round(g);
+    if(e.i==='new')dx.extra.push(rec);else dx.extra[Number(e.i)]=rec;
+    sortX(dx);db.lastType.extra=e.tp;
+  }else if(e.m==='obs'){
     if(!raw)return toast('Digite o texto da observação.','err');
     var dd=db.days[e.k]||(db.days[e.k]={obs:[]});
     if(!dd.obs)dd.obs=[];
@@ -596,7 +684,9 @@ function dlgDelete(){
   if(!edit)return;
   if(!confirm('Excluir este registro?'))return;
   var e=edit;
-  if(e.m==='obs'){
+  if(e.m==='extra'){
+    var dz=db.days[e.k];dz.extra.splice(Number(e.i),1);if(!dz.extra.length)delete dz.extra;clean(e.k);
+  }else if(e.m==='obs'){
     var d=db.days[e.k];d.obs.splice(Number(e.i),1);clean(e.k);
   }else delSlot(e.k,e.m,e.f||null);
   persist();closeDlg();renderAll();toast('Registro excluído.');
@@ -618,7 +708,7 @@ function periodKeys(){
 }
 var avg=function(a){return a.length?Math.round(a.reduce(function(s,x){return s+x},0)/a.length):null};
 function stats(keys){
-  var all=[],by={antes:[],apos:[],deitar:[]},ins={};
+  var all=[],by={antes:[],apos:[],deitar:[]},ins={},nx=0,dx=0;
   keys.forEach(function(k){
     var d=db.days[k];if(!d)return;
     var sums={};
@@ -630,12 +720,14 @@ function stats(keys){
     });
     if(d.deitar){all.push(d.deitar.v);by.deitar.push(d.deitar.v)}
     if(d.deitarDose){var q2=d.deitarDose.tp||'sem';sums[q2]=(sums[q2]||0)+d.deitarDose.v}
+    xs(d).forEach(function(x){if(x.g!=null)all.push(x.g);var q3=x.tp||'sem';sums[q3]=(sums[q3]||0)+x.v;nx++});
+    if(xs(d).length)dx++;
     Object.keys(sums).forEach(function(q){(ins[q]||(ins[q]=[])).push(sums[q])});
   });
   return {
     n:all.length,avg:avg(all),min:all.length?Math.min.apply(null,all):null,max:all.length?Math.max.apply(null,all):null,
     lo:all.filter(function(v){return v<db.low}).length,hi:all.filter(function(v){return v>db.high}).length,
-    aAntes:avg(by.antes),aApos:avg(by.apos),aDeitar:avg(by.deitar),
+    aAntes:avg(by.antes),aApos:avg(by.apos),aDeitar:avg(by.deitar),nx:nx,dx:dx,
     ins:Object.keys(ins).map(function(q){var a=ins[q];return {k:q,avg:Math.round(a.reduce(function(s,x){return s+x},0)/a.length*10)/10}}).sort(function(a,b){var ia=INS.map(function(x){return x.k}).indexOf(a.k),ib=INS.map(function(x){return x.k}).indexOf(b.k);return (ia<0?99:ia)-(ib<0?99:ib)})
   };
 }
@@ -651,9 +743,17 @@ function deitarCell(d){
   return '<td'+(cls?' class="'+cls+'"':'')+'>'+(s?s.v+(s.t?'<small>'+s.t+'</small>':''):'')+
     (z?'<small class="dz">'+insOf(z.tp).s+' '+fnum(z.v)+' U'+(z.t?' · '+z.t:'')+'</small>':'')+'</td>';
 }
+function xcell(x){
+  if(!x)return '<td></td>';
+  var g=x.g!=null,f=g?flag(x.g):'';
+  return '<td>'+esc(fnum(x.v))+'<small class="tpr">'+(x.tp?insOf(x.tp).s:'s/ tipo')+'</small>'+(x.t?'<small>'+esc(x.t)+'</small>':'')+
+    (g?'<small class="xg'+(f?' '+f:'')+'">gli '+esc(x.g)+(f==='lo'?' ▼':(f==='hi'?' ▲':''))+'</small>':'')+'</td>';
+}
+var XW=[[82,58,66,0],[76,54,64,60],[74,52,62,58],[72,49,60,56],[70,47,58,54]]; /* larguras (px): dia, refeição, deitar, extra */
 function buildReport(){
   var keys=periodKeys();
   var st=stats(keys);
+  var nx=Math.min(keys.reduce(function(m,k){return Math.max(m,xs(db.days[k]).length)},0),MAXX),w=XW[nx];
   var from=$('#rFrom').value,to=$('#rTo').value;
   var name=db.patient?esc(db.patient):'______________________________';
   var h='<h1>Automonitorização da Glicemia Capilar (AMG)</h1>';
@@ -669,15 +769,19 @@ function buildReport(){
   h+='<div>Média ao deitar <b>'+(st.aDeitar==null?'—':st.aDeitar)+'</b></div>';
   if(st.ins.length)st.ins.forEach(function(x){h+='<div>Insulina '+insOf(x.k).n.toLowerCase()+' (média/dia) <b>'+fnum(x.avg)+'</b> U</div>'});
   else h+='<div>Insulina (média/dia) <b>—</b></div>';
+  if(st.nx)h+='<div>Doses extras <b>'+st.nx+'</b> em '+st.dx+(st.dx>1?' dias':' dia')+'</div>';
   h+='</div>';
-  h+='<table class="rt"><colgroup><col style="width:82px">';
-  for(var c=0;c<12;c++)h+='<col style="width:58px">';
-  h+='<col style="width:66px"><col></colgroup><thead><tr><th rowspan="2">Dia/Mês/Ano</th>';
+  h+='<table class="rt'+(nx?' rtx':'')+(nx>2?' rtx3':'')+'"><colgroup><col style="width:'+w[0]+'px">';
+  for(var c=0;c<12;c++)h+='<col style="width:'+w[1]+'px">';
+  h+='<col style="width:'+w[2]+'px">';
+  for(c=0;c<nx;c++)h+='<col style="width:'+w[3]+'px">';
+  h+='<col></colgroup><thead><tr><th rowspan="2">Dia/Mês/Ano</th>';
   MEALS.forEach(function(m){h+='<th colspan="3">'+m.n+'</th>'});
-  h+='<th rowspan="2">Glicemia ao deitar<small>(e insulina)</small></th><th rowspan="2">Obs.</th></tr><tr>';
+  h+='<th rowspan="2">Glicemia ao deitar<small>(e insulina)</small></th>'+(nx?'<th colspan="'+nx+'">Doses extras</th>':'')+'<th rowspan="2">Obs.</th></tr><tr>';
   MEALS.forEach(function(){h+='<th>Antes</th><th>2h após</th><th>Dose insulina (unidade)</th>'});
+  for(c=0;c<nx;c++)h+='<th>Extra '+(c+1)+'</th>';
   h+='</tr></thead><tbody>';
-  if(!keys.length)h+='<tr><td colspan="15" style="height:60px">Nenhum registro no período selecionado.</td></tr>';
+  if(!keys.length)h+='<tr><td colspan="'+(15+nx)+'" style="height:60px">Nenhum registro no período selecionado.</td></tr>';
   keys.forEach(function(k){
     var d=db.days[k]||{};
     h+='<tr><td class="dt">'+fmtDate(k)+'<small>'+WD[parseKey(k).getDay()]+'</small></td>';
@@ -686,16 +790,18 @@ function buildReport(){
       h+=rcell(x.antes)+rcell(x.apos)+rcell(x.dose,true);
     });
     h+=deitarCell(d);
-    h+='<td class="obs">'+(d.obs||[]).map(function(o){return (o.t?o.t+' ':'')+(o.m?'('+mealShort(o.m)+') ':'')+esc(o.text)}).join('<br>')+'</td></tr>';
+    for(var j=0;j<nx;j++)h+=xcell(xs(d)[j]);
+    var more=xs(d).slice(MAXX).map(function(x){return esc('Extra '+(x.t||'')+': '+fnum(x.v)+' U '+(x.tp?insOf(x.tp).s:'')+(x.g!=null?' (gli '+x.g+')':''))});
+    h+='<td class="obs">'+(d.obs||[]).map(function(o){return (o.t?o.t+' ':'')+(o.m?'('+mealShort(o.m)+') ':'')+esc(o.text)}).concat(more).join('<br>')+'</td></tr>';
   });
   h+='</tbody></table>';
-  h+='<div class="rfoot">Valores de glicemia em mg/dL. O horário de cada registro e, nas doses de insulina, o tipo (Ultra, Rápida, NPH, Basal, Mista) aparecem em tamanho pequeno abaixo do valor. ▼ = abaixo de '+db.low+' · ▲ = acima de '+db.high+' (limites configurados pelo paciente). Registro feito pelo paciente; a interpretação cabe ao médico.</div>';
+  h+='<div class="rfoot">Valores de glicemia em mg/dL. O horário de cada registro e, nas doses de insulina, o tipo (Ultra, Rápida, NPH, Basal, Mista) aparecem em tamanho pequeno abaixo do valor. ▼ = abaixo de '+db.low+' · ▲ = acima de '+db.high+' (limites configurados pelo paciente).'+(nx?' “Doses extras”: aplicações a mais, com dose, tipo, horário e, quando informada, a glicemia do momento (gli).':'')+' Registro feito pelo paciente; a interpretação cabe ao médico.</div>';
   $('#report').innerHTML=h;
   fitPreview();
 }
 function fitPreview(){
   var w=$('#reportWrap');
-  var avail=Math.max(280,Math.min(window.innerWidth,560)-24);
+  var avail=Math.max(280,Math.min($('#tab-relatorio').clientWidth||window.innerWidth,560)-24);
   w.style.zoom=Math.min(1,avail/1040);
 }
 function setRange(n){
@@ -712,8 +818,9 @@ function shareText(){
   L.push('Leituras: '+st.n+' · média '+(st.avg==null?'—':st.avg)+' · mín '+(st.min==null?'—':st.min)+' · máx '+(st.max==null?'—':st.max));
   L.push('Abaixo de '+db.low+': '+st.lo+' · Acima de '+db.high+': '+st.hi);
   st.ins.forEach(function(x){L.push('Insulina '+insOf(x.k).n.toLowerCase()+' (média/dia): '+fnum(x.avg)+' U')});
+  if(st.nx)L.push('Doses extras: '+st.nx+' em '+st.dx+(st.dx>1?' dias':' dia'));
   L.push('');
-  L.push('_Formato: antes/2h após (dose e tipo)_');
+  L.push('_Formato: antes/2h após (dose e tipo)'+(st.nx?'. Extra = dose adicional (hora, dose, tipo, glicemia)':'')+'_');
   keys.forEach(function(k){
     var d=db.days[k];if(!d)return;
     var p=[];
@@ -722,6 +829,7 @@ function shareText(){
       p.push(m.s+' '+(x.antes?x.antes.v:'–')+'/'+(x.apos?x.apos.v:'–')+(x.dose?' ('+fnum(x.dose.v)+'U'+(x.dose.tp?' '+insOf(x.dose.tp).s:'')+')':''));
     });
     if(d.deitar||d.deitarDose)p.push('Deitar '+(d.deitar?d.deitar.v:'–')+(d.deitarDose?' ('+fnum(d.deitarDose.v)+'U'+(d.deitarDose.tp?' '+insOf(d.deitarDose.tp).s:'')+')':''));
+    xs(d).forEach(function(x){p.push('Extra '+(x.t?x.t+' ':'')+fnum(x.v)+'U'+(x.tp?' '+insOf(x.tp).s:'')+(x.g!=null?' (gli '+x.g+')':''))});
     var line=fmtDate(k).slice(0,5)+' '+WD[parseKey(k).getDay()]+': '+p.join(' | ');
     if(d.obs&&d.obs.length)line+=' — Obs: '+d.obs.map(function(o){return o.text}).join('; ');
     L.push(line);
@@ -768,7 +876,7 @@ function showTab(t){
 }
 function syncInputs(){
   $('#rName').value=db.patient||'';
-  $('#sLow').value=db.low;$('#sHigh').value=db.high;$('#sRatio').value=db.ratio?fnum(db.ratio):'';$('#sIsf').value=db.isf?fnum(db.isf):'';$('#sTarget').value=db.target?fnum(db.target):'';
+  $('#sLow').value=db.low;$('#sHigh').value=db.high;syncParams();
 }
 function tick(){
   $('#clock').textContent=nowTime();
@@ -812,14 +920,14 @@ $('#pending').addEventListener('click',function(e){
   window.scrollTo(0,0);$('#fGli').focus();
 });
 document.addEventListener('click',function(e){
-  var c=e.target.closest('.cell,.obsline,.addobs');
+  var c=e.target.closest('.cell,.obsline,.addobs,.addx');
   if(!c||!c.dataset.k)return;
   openEdit(c.dataset.k,c.dataset.m,c.dataset.f||null,c.dataset.i);
 });
 $('#dlgOk').addEventListener('click',dlgSave);
 $('#dlgCancel').addEventListener('click',closeDlg);
 $('#dlgDel').addEventListener('click',dlgDelete);
-$('#dlgVal').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();dlgSave()}});
+['#dlgVal','#dlgGli'].forEach(function(s){$(s).addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();dlgSave()}})});
 $('#dlg').addEventListener('close',function(){edit=null});
 $$('nav.tabs button').forEach(function(b){b.addEventListener('click',function(){showTab(b.dataset.tab)})});
 
@@ -906,7 +1014,8 @@ function cbRender(){
     $('#cbTotal').textContent=fnum(cbRound(tot))+' g';
     $('#cbTotWrap').hidden=false;
   }
-  var est=$('#cbEst'),gli=num($('#cbGli').value),h='',carbU=null,corrU=null,low=false;
+  var est=$('#cbEst'),gli=num($('#cbGli').value),h='',det='',carbU=null,corrU=null,low=false;
+  $('#cbCorr').hidden=!(gli>0);
   est.removeAttribute('data-u');
   if(!cb.length&&!(gli>0)){est.hidden=true;est.innerHTML='';return}
   est.hidden=false;
@@ -915,23 +1024,26 @@ function cbRender(){
     h+='<p class="hint" style="color:var(--err);margin:0 0 8px"><b>Glicemia abaixo de '+db.low+' mg/dL: não use a correção. Siga a orientação do seu médico para tratar a hipoglicemia.</b></p>';
   }
   if(cb.length){
-    if(db.ratio>0){carbU=cbHalf(tot/db.ratio);h+='<div>Carboidratos ('+fnum(cbRound(tot))+' g ÷ '+fnum(db.ratio)+'): <b>'+fnum(carbU)+' U</b></div>'}
-    else h+='<div class="hint" style="margin:0">Para estimar a insulina dos carboidratos, informe em <b>Ajustes</b> a relação insulina/carboidrato prescrita.</div>';
+    if(db.ratio>0){
+      var q=tot/db.ratio;carbU=cbHalf(q);
+      det+='<div>Carboidratos: '+fnum(cbRound(tot))+' g ÷ '+fnum(db.ratio)+' = '+fnum(Math.round(q*100)/100)+' → <b>'+fnum(carbU)+' U</b></div>';
+    }else det+='<div class="hint" style="margin:0;color:#b45309"><b>Para ver as unidades de insulina desta refeição, informe acima a sua relação insulina/carboidrato</b> (prescrita pelo médico) e toque fora do campo.</div>';
   }
   if(gli>0&&!low){
     if(db.isf>0&&db.target>0){
-      corrU=gli>db.target?cbHalf((gli-db.target)/db.isf):0;
-      h+='<div style="margin-top:6px">Correção com insulina regular (('+fnum(gli)+' − '+fnum(db.target)+') ÷ '+fnum(db.isf)+'): <b>'+(corrU>0?fnum(corrU)+' U':'não precisa (glicemia na meta)')+'</b></div>';
-    }else h+='<div class="hint" style="margin:6px 0 0">Para ver a correção, informe em <b>Ajustes</b> o fator de sensibilidade e a glicemia-alvo prescritos.</div>';
+      var cq=(gli-db.target)/db.isf;corrU=gli>db.target?cbHalf(cq):0;
+      det+='<div style="margin-top:6px">Correção com insulina regular: ('+fnum(gli)+' − '+fnum(db.target)+') ÷ '+fnum(db.isf)+(corrU>0?' = '+fnum(Math.round(cq*100)/100)+' → <b>'+fnum(corrU)+' U</b>':' → <b>não precisa (glicemia na meta)</b>')+'</div>';
+    }else det+='<div class="hint" style="margin:6px 0 0;color:#b45309"><b>Para ver a correção, preencha o fator de correção e a glicemia-alvo</b> nos campos logo abaixo da glicemia, no topo da tela.</div>';
   }
   var total=(carbU||0)+(corrU||0);
-  if(!low&&total>0){
-    h+='<div style="margin-top:10px">Total estimado</div><strong>≈ '+fnum(total)+' U</strong>'+
+  if(!low&&total>0&&(!cb.length||carbU!==null)){
+    h+='<div><b>'+(cb.length?'Insulina para esta refeição':'Insulina de correção')+'</b></div><strong>≈ '+fnum(total)+' U</strong>'+
       (total>30?'<p class="hint" style="color:var(--err);margin:6px 0 0"><b>Valor alto: confira os alimentos, as gramas e a glicemia.</b></p>':'')+
-      '<p class="hint" style="margin:6px 0 0">Estimativa feita só com os valores prescritos que você informou. Não considera atividade física, insulina ainda ativa de doses anteriores nem outras orientações. Confirme com o seu médico antes de aplicar.</p>'+
+      '<div style="margin-top:8px">'+det+'</div>'+
+      '<p class="hint" style="margin:8px 0 0">Estimativa feita só com os valores prescritos que você informou, arredondada para 0,5 U. Não considera atividade física, insulina ainda ativa de doses anteriores nem outras orientações. Confirme com o seu médico antes de aplicar.</p>'+
       '<button class="sec" id="cbUse" type="button">Levar para o registro</button>';
     est.dataset.u=String(total);
-  }
+  }else h+=det;
   est.innerHTML=h;
 }
 function cbUse(){
@@ -947,31 +1059,26 @@ $('#cbGroup').addEventListener('change',cbFoods);
 $('#cbFood').addEventListener('change',cbInfo);
 $('#cbAdd').addEventListener('click',cbAdd);
 $('#cbGrams').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();cbAdd()}});
-$('#sIsf').addEventListener('change',function(){
-  var v=this.value.trim();
-  if(!v){db.isf=null;persist();cbRender();return}
-  var n=num(v);
-  if(n&&!isNaN(n)&&n>=5&&n<=500){db.isf=n;persist();cbRender();toast('Fator de correção salvo.')}
-  else{this.value=db.isf?fnum(db.isf):'';toast('Informe um valor entre 5 e 500.','err')}
-});
-$('#sTarget').addEventListener('change',function(){
-  var v=this.value.trim();
-  if(!v){db.target=null;persist();cbRender();return}
-  var n=num(v);
-  if(n&&!isNaN(n)&&n>=70&&n<=250){db.target=Math.round(n);persist();cbRender();toast('Glicemia-alvo salva.')}
-  else{this.value=db.target?fnum(db.target):'';toast('Informe um valor entre 70 e 250.','err')}
-});
+/* relação, fator de correção e glicemia-alvo: cada um tem um campo em Ajustes e outro na calculadora (sempre iguais) */
+var PARAMS=[
+  {k:'ratio',ins:['#sRatio','#cbRatio'],min:1,max:200,int:false,ok:'Relação salva.',err:'Informe um valor entre 1 e 200.'},
+  {k:'isf',ins:['#sIsf','#cbIsf'],min:5,max:500,int:false,ok:'Fator de correção salvo.',err:'Informe um valor entre 5 e 500.'},
+  {k:'target',ins:['#sTarget','#cbTarget'],min:70,max:250,int:true,ok:'Glicemia-alvo salva.',err:'Informe um valor entre 70 e 250.'}
+];
+function syncParams(){PARAMS.forEach(function(p){p.ins.forEach(function(s){$(s).value=db[p.k]>0?fnum(db[p.k]):''})})}
+PARAMS.forEach(function(p){p.ins.forEach(function(s){
+  $(s).addEventListener('change',function(){
+    var v=this.value.trim();
+    if(!v){db[p.k]=null;persist();syncParams();cbRender();return}
+    var n=num(v);
+    if(n&&!isNaN(n)&&n>=p.min&&n<=p.max){db[p.k]=p.int?Math.round(n):n;persist();syncParams();cbRender();toast(p.ok)}
+    else{syncParams();toast(p.err,'err')}
+  });
+})});
 $('#cbGli').addEventListener('input',cbRender);
 $('#cbClear').addEventListener('click',function(){cb=[];cbRender()});
 $('#cbList').addEventListener('click',function(e){var b=e.target.closest('button[data-rm]');if(!b)return;cb.splice(Number(b.dataset.rm),1);cbRender()});
 $('#cbEst').addEventListener('click',function(e){if(e.target.closest('#cbUse'))cbUse()});
-$('#sRatio').addEventListener('change',function(){
-  var v=this.value.trim();
-  if(!v){db.ratio=null;persist();cbRender();return}
-  var n=num(v);
-  if(n&&!isNaN(n)&&n>=1&&n<=200){db.ratio=n;persist();cbRender();toast('Relação salva.')}
-  else{this.value=db.ratio?fnum(db.ratio):'';toast('Informe um valor entre 1 e 200.','err')}
-});
 
 /* ---------- início ---------- */
 buildChips();syncInputs();cbBuild();cbRender();
